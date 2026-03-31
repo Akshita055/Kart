@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+	* {
+		@apply antialiased;
+	}
+
+	body {
+		@apply m-0 font-['Inter'];
+	}
+
+	h1,
+	h2,
+	h3,
+	h4 {
+		@apply font-['Plus_Jakarta_Sans'];
+	}
+
+	::selection {
+		@apply bg-cyan-300/70 text-slate-900;
+	}
+
+	body::before {
+		content: '';
+		position: fixed;
+		inset: 0;
+		pointer-events: none;
+		background-image: radial-gradient(circle at 18% 12%, rgba(99, 102, 241, 0.18), transparent 40%), radial-gradient(circle at 86% 8%, rgba(6, 182, 212, 0.16), transparent 42%), radial-gradient(circle at 55% 88%, rgba(59, 130, 246, 0.12), transparent 35%);
+		z-index: -1;
+	}
+}
+
+@layer utilities {
+	.glass-panel {
+		@apply border border-white/40 bg-white/70 shadow-[0_18px_45px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-700/40 dark:bg-slate-900/65;
+	}
+
+	.section-kicker {
+		@apply text-xs font-extrabold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-300;
+	}
+}

@@ -1,0 +1,16 @@
+{
+  "name": "campuskart-workspace",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix campuskart run dev",
+    "build": "npm --prefix campuskart run build",
+    "lint": "npm --prefix campuskart run lint",
+    "preview": "npm --prefix campuskart run preview"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.2.2",
+    "framer-motion": "^12.38.0",
+    "react-router-dom": "^7.13.2",
+    "tailwindcss": "^4.2.2"
+  }
+}
