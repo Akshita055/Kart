@@ -6,6 +6,7 @@ const links = [
   { to: '/chat', label: 'Messages', icon: '◉' },
   { to: '/add-product', label: 'Post Item', icon: '+' },
   { to: '/profile', label: 'Profile', icon: '☺' },
+  { to: '/settings', label: 'Settings', icon: '⚙' },
 ]
 
 export function Sidebar() {

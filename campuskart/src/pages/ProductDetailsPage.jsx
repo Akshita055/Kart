@@ -8,10 +8,11 @@ import { useAppContext } from '../hooks/useAppContext'
 
 export function ProductDetailsPage() {
   const { id } = useParams()
-  const { addToast } = useAppContext()
+  const { addToast, addToCart, toggleWishlist, isInWishlist } = useAppContext()
   const product = useMemo(() => products.find((item) => item.id === id) || products[0], [id])
   const [activeImage, setActiveImage] = useState(product.image)
   const [openModal, setOpenModal] = useState(false)
+  const wishlisted = isInWishlist(product.id)
 
   const gallery = [
     product.image,
@@ -76,8 +77,25 @@ export function ProductDetailsPage() {
               <Button className='w-full text-base' onClick={() => setOpenModal(true)}>
                 Chat with Seller
               </Button>
-              <Button variant='secondary' className='w-full text-base' onClick={() => addToast('Added to cart')}>
-                Buy Now
+              <Button
+                variant='secondary'
+                className='w-full text-base'
+                onClick={() => {
+                  addToCart(product)
+                  addToast('Added to cart')
+                }}
+              >
+                Add to Cart
+              </Button>
+              <Button
+                variant='ghost'
+                className='w-full text-base'
+                onClick={() => {
+                  toggleWishlist(product)
+                  addToast(wishlisted ? 'Removed from wishlist' : 'Added to wishlist')
+                }}
+              >
+                {wishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
               </Button>
             </div>
           </article>

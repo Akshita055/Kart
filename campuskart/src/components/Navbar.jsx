@@ -1,16 +1,37 @@
 import { Link, NavLink } from 'react-router-dom'
 import { motion as Motion } from 'framer-motion'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAppContext } from '../hooks/useAppContext'
 
 export function Navbar({ theme, toggleTheme }) {
-  const { searchQuery, setSearchQuery, user, isAuthenticated, signOut, addToast } = useAppContext()
+  const {
+    searchQuery,
+    setSearchQuery,
+    user,
+    isAuthenticated,
+    signOut,
+    addToast,
+    cartCount,
+    wishlistCount,
+  } = useAppContext()
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
+  const profileMenuRef = useRef(null)
 
   const initials = useMemo(() => {
     if (!user?.name) return 'AR'
     const parts = user.name.split(' ').filter(Boolean)
     return parts.slice(0, 2).map((part) => part[0]?.toUpperCase()).join('') || 'AR'
   }, [user])
+
+  useEffect(() => {
+    const handleOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setIsProfileMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleOutside)
+    return () => document.removeEventListener('mousedown', handleOutside)
+  }, [])
 
   return (
     <Motion.header
@@ -69,24 +90,71 @@ export function Navbar({ theme, toggleTheme }) {
           >
             {theme === 'dark' ? '☀' : '☾'}
           </button>
+
+          <Link
+            to='/wishlist'
+            className='relative grid h-10 w-10 place-items-center rounded-2xl border border-slate-200/70 bg-white text-base text-slate-700 transition hover:scale-105 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
+            aria-label='Wishlist'
+          >
+            ♡
+            {wishlistCount > 0 ? (
+              <span className='absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-cyan-500 px-1 text-[10px] font-bold text-white'>
+                {wishlistCount}
+              </span>
+            ) : null}
+          </Link>
+
+          <Link
+            to='/cart'
+            className='relative grid h-10 w-10 place-items-center rounded-2xl border border-slate-200/70 bg-white text-base text-slate-700 transition hover:scale-105 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
+            aria-label='Cart'
+          >
+            🛒
+            {cartCount > 0 ? (
+              <span className='absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-indigo-600 px-1 text-[10px] font-bold text-white'>
+                {cartCount}
+              </span>
+            ) : null}
+          </Link>
+
           {isAuthenticated ? (
-            <>
+            <div className='relative' ref={profileMenuRef}>
               <button
-                onClick={() => {
-                  signOut()
-                  addToast('Signed out')
-                }}
-                className='hidden rounded-2xl border border-slate-200/70 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 sm:block'
-              >
-                Logout
-              </button>
-              <Link
-                to='/profile'
+                onClick={() => setIsProfileMenuOpen((prev) => !prev)}
                 className='grid h-10 w-10 place-items-center rounded-full border-2 border-indigo-300 bg-linear-to-br from-indigo-500 to-blue-500 text-sm font-bold text-white shadow-lg shadow-indigo-500/25'
+                aria-label='Open profile menu'
               >
-                {initials}
-              </Link>
-            </>
+                {user?.photoUrl ? (
+                  <img src={user.photoUrl} alt='Profile' className='h-full w-full rounded-full object-cover' />
+                ) : (
+                  initials
+                )}
+              </button>
+
+              {isProfileMenuOpen ? (
+                <div className='absolute right-0 top-12 z-50 w-44 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900'>
+                  <Link
+                    to='/profile/edit'
+                    onClick={() => {
+                      setIsProfileMenuOpen(false)
+                    }}
+                    className='block w-full rounded-xl px-3 py-2 text-left text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
+                  >
+                    Edit Profile
+                  </Link>
+                  <button
+                    onClick={() => {
+                      signOut()
+                      addToast('Signed out')
+                      setIsProfileMenuOpen(false)
+                    }}
+                    className='mt-1 w-full rounded-xl px-3 py-2 text-left text-sm font-semibold text-rose-600 transition hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-900/20'
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : null}
+            </div>
           ) : (
             <Link
               to='/auth'

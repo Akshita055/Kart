@@ -15,6 +15,7 @@ export function ProfilePage() {
     name: isAuthenticated ? user?.name || userProfile.name : userProfile.name,
     email: isAuthenticated ? user?.email || userProfile.email : userProfile.email,
     college: descriptor,
+    avatar: isAuthenticated ? user?.photoUrl || userProfile.avatar : userProfile.avatar,
   }
 
   return (

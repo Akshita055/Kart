@@ -1,8 +1,12 @@
 import { Link } from 'react-router-dom'
 import { motion as Motion } from 'framer-motion'
 import { Button } from './Button'
+import { useAppContext } from '../hooks/useAppContext'
 
 export function ProductCard({ product }) {
+  const { addToCart, toggleWishlist, isInWishlist, addToast } = useAppContext()
+  const wishlisted = isInWishlist(product.id)
+
   return (
     <Motion.article
       whileHover={{ y: -6 }}
@@ -17,6 +21,16 @@ export function ProductCard({ product }) {
         <span className='absolute left-2 top-2 max-w-[78%] truncate rounded-full bg-white/85 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider dark:bg-slate-900/80 sm:left-3 sm:top-3 sm:px-3'>
           {product.tag}
         </span>
+        <button
+          onClick={() => {
+            toggleWishlist(product)
+            addToast(wishlisted ? 'Removed from wishlist' : 'Added to wishlist')
+          }}
+          className='absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-white/85 text-base shadow-sm transition hover:scale-105 dark:bg-slate-900/85'
+          aria-label='Toggle wishlist'
+        >
+          {wishlisted ? '♥' : '♡'}
+        </button>
       </div>
       <div className='flex flex-1 flex-col space-y-3 p-5'>
         <div className='flex items-start justify-between gap-3'>
@@ -32,7 +46,15 @@ export function ProductCard({ product }) {
           {product.seller} • {product.distance}
         </p>
         <div className='mt-auto grid grid-cols-1 gap-2 min-[430px]:grid-cols-2'>
-          <Button className='w-full'>Buy Now</Button>
+          <Button
+            className='w-full'
+            onClick={() => {
+              addToCart(product)
+              addToast('Added to cart')
+            }}
+          >
+            Add to Cart
+          </Button>
           <Link to={`/product/${product.id}`} className='w-full'>
             <Button variant='secondary' className='w-full'>
               Details

@@ -10,10 +10,13 @@ import { AppProvider } from './hooks/AppProvider'
 import { useTheme } from './hooks/useTheme'
 import { AddProductPage } from './pages/AddProductPage'
 import { AuthPage } from './pages/AuthPage'
+import { CartPage } from './pages/CartPage'
 import { ChatPage } from './pages/ChatPage'
+import { EditProfilePage } from './pages/EditProfilePage'
 import { HomePage } from './pages/HomePage'
 import { ProductDetailsPage } from './pages/ProductDetailsPage'
 import { ProfilePage } from './pages/ProfilePage'
+import { WishlistPage } from './pages/WishlistPage'
 
 function RouteScrollReset() {
   const location = useLocation()
@@ -49,10 +52,14 @@ function AppShell() {
           <Routes location={location} key={location.pathname}>
             <Route path='/' element={<HomePage />} />
             <Route path='/auth' element={<AuthPage />} />
+            <Route path='/cart' element={<CartPage />} />
+            <Route path='/wishlist' element={<WishlistPage />} />
             <Route path='/product/:id' element={<ProductDetailsPage />} />
             <Route path='/add-product' element={<AddProductPage />} />
             <Route path='/chat' element={<ChatPage />} />
             <Route path='/profile' element={<ProfilePage />} />
+            <Route path='/profile/edit' element={<EditProfilePage />} />
+            <Route path='/settings' element={<EditProfilePage />} />
             <Route path='*' element={<Navigate to='/' replace />} />
           </Routes>
         </AnimatePresence>
