@@ -3,9 +3,10 @@
   "private": true,
   "scripts": {
     "dev": "npm --prefix campuskart run dev",
-    "build": "npm --prefix campuskart run build",
+    "build": "npm --prefix campuskart install && npm --prefix campuskart run build",
     "lint": "npm --prefix campuskart run lint",
-    "preview": "npm --prefix campuskart run preview"
+    "preview": "npm --prefix campuskart run preview",
+    "postinstall": "npm --prefix campuskart install"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.2",
