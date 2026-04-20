@@ -13,9 +13,14 @@ export function Navbar({ theme, toggleTheme }) {
     addToast,
     cartCount,
     wishlistCount,
+    notifications,
+    markNotificationRead,
+    loadNotifications,
   } = useAppContext()
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
   const profileMenuRef = useRef(null)
+  const notificationRef = useRef(null)
 
   const initials = useMemo(() => {
     if (!user?.name) return 'AR'
@@ -28,10 +33,19 @@ export function Navbar({ theme, toggleTheme }) {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
         setIsProfileMenuOpen(false)
       }
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setShowNotifications(false)
+      }
     }
     document.addEventListener('mousedown', handleOutside)
     return () => document.removeEventListener('mousedown', handleOutside)
   }, [])
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadNotifications()
+    }
+  }, [isAuthenticated, loadNotifications])
 
   return (
     <Motion.header
@@ -52,7 +66,7 @@ export function Navbar({ theme, toggleTheme }) {
           <nav className='hidden items-center gap-5 md:flex'>
             {[
               { to: '/', label: 'Feed' },
-              { to: '/product/p2', label: 'Explore' },
+              { to: '/', label: 'Explore' },
               { to: '/chat', label: 'Chat' },
               { to: '/profile', label: 'Profile' },
             ].map((item) => (
@@ -116,6 +130,47 @@ export function Navbar({ theme, toggleTheme }) {
               </span>
             ) : null}
           </Link>
+
+          <div className='relative' ref={notificationRef}>
+            <button
+              onClick={() => setShowNotifications((prev) => !prev)}
+              className='relative grid h-10 w-10 place-items-center rounded-2xl border border-slate-200/70 bg-white text-base text-slate-700 transition hover:scale-105 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
+              aria-label='Notifications'
+            >
+              🔔
+              {notifications.some((item) => !item.read) ? (
+                <span className='absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white'>
+                  {notifications.filter((item) => !item.read).length}
+                </span>
+              ) : null}
+            </button>
+
+            {showNotifications ? (
+              <div className='absolute right-0 top-12 z-50 max-h-80 w-80 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900'>
+                <p className='px-2 py-1 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400'>
+                  Notifications
+                </p>
+                {notifications.length ? (
+                  notifications.slice(0, 10).map((item) => (
+                    <button
+                      key={item._id}
+                      onClick={() => markNotificationRead(item._id)}
+                      className={`mt-1 block w-full rounded-xl px-3 py-2 text-left text-xs transition ${
+                        item.read
+                          ? 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
+                          : 'bg-indigo-50 text-slate-700 hover:bg-indigo-100 dark:bg-indigo-500/20 dark:text-slate-200 dark:hover:bg-indigo-500/30'
+                      }`}
+                    >
+                      <p className='font-semibold'>{item.title}</p>
+                      <p className='truncate'>{item.body}</p>
+                    </button>
+                  ))
+                ) : (
+                  <p className='px-3 py-2 text-xs text-slate-500 dark:text-slate-400'>No notifications</p>
+                )}
+              </div>
+            ) : null}
+          </div>
 
           {isAuthenticated ? (
             <div className='relative' ref={profileMenuRef}>

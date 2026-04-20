@@ -5,7 +5,9 @@ import { useAppContext } from '../hooks/useAppContext'
 
 export function ProductCard({ product }) {
   const { addToCart, toggleWishlist, isInWishlist, addToast } = useAppContext()
-  const wishlisted = isInWishlist(product.id)
+  const wishlisted = isInWishlist(product._id)
+  const sellerName = product?.userId?.name || product.seller || 'Campus Seller'
+  const imageUrl = product?.images?.[0] || product.image
 
   return (
     <Motion.article
@@ -14,12 +16,12 @@ export function ProductCard({ product }) {
     >
       <div className='relative aspect-[4/3] overflow-hidden sm:aspect-[4/5]'>
         <img
-          src={product.image}
+          src={imageUrl}
           alt={product.title}
           className='h-full w-full object-cover transition duration-700 hover:scale-105'
         />
         <span className='absolute left-2 top-2 max-w-[78%] truncate rounded-full bg-white/85 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider dark:bg-slate-900/80 sm:left-3 sm:top-3 sm:px-3'>
-          {product.tag}
+          {product.tag || product.category || 'Listing'}
         </span>
         <button
           onClick={() => {
@@ -43,7 +45,7 @@ export function ProductCard({ product }) {
         </div>
         <p className='line-clamp-2 text-xs text-slate-500 dark:text-slate-400'>{product.description}</p>
         <p className='text-xs text-slate-500 dark:text-slate-400'>
-          {product.seller} • {product.distance}
+          {sellerName} • {product.distanceKm ? `${product.distanceKm} km away` : 'Campus Area'}
         </p>
         <div className='mt-auto grid grid-cols-1 gap-2 min-[430px]:grid-cols-2'>
           <Button
@@ -55,7 +57,7 @@ export function ProductCard({ product }) {
           >
             Add to Cart
           </Button>
-          <Link to={`/product/${product.id}`} className='w-full'>
+          <Link to={`/product/${product._id}`} className='w-full'>
             <Button variant='secondary' className='w-full'>
               Details
             </Button>

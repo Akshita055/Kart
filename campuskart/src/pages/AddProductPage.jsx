@@ -5,14 +5,21 @@ import { Button } from '../components/Button'
 import { useAppContext } from '../hooks/useAppContext'
 
 export function AddProductPage() {
-  const { addToast } = useAppContext()
+  const { addToast, postProduct, suggestPrice } = useAppContext()
   const [form, setForm] = useState({
     title: '',
     category: '',
     price: '',
     description: '',
+    listingKind: 'product',
+    noteType: 'none',
+    skillType: '',
+    daysValid: 30,
   })
-  const [preview, setPreview] = useState('')
+  const [preview, setPreview] = useState([])
+  const [files, setFiles] = useState([])
+  const [posting, setPosting] = useState(false)
+  const [suggestedPrice, setSuggestedPrice] = useState(null)
   const [submitted, setSubmitted] = useState(false)
 
   const errors = useMemo(
@@ -27,7 +34,7 @@ export function AddProductPage() {
 
   const onChange = (field, value) => setForm((prev) => ({ ...prev, [field]: value }))
 
-  const onSubmit = (event) => {
+  const onSubmit = async (event) => {
     event.preventDefault()
     setSubmitted(true)
     const hasError = Object.values(errors).some(Boolean)
@@ -35,17 +42,51 @@ export function AddProductPage() {
       addToast('Please fix form errors', 'error')
       return
     }
-    addToast('Listing posted successfully')
-    setForm({ title: '', category: '', price: '', description: '' })
-    setPreview('')
-    setSubmitted(false)
+    try {
+      setPosting(true)
+      let location = undefined
+      if (navigator.geolocation) {
+        location = await new Promise((resolve) => {
+          navigator.geolocation.getCurrentPosition(
+            (position) =>
+              resolve({
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+                label: 'Campus Area',
+              }),
+            () => resolve(undefined),
+          )
+        })
+      }
+
+      await postProduct({ payload: { ...form, location }, files })
+      addToast('Listing posted successfully')
+      setForm({
+        title: '',
+        category: '',
+        price: '',
+        description: '',
+        listingKind: 'product',
+        noteType: 'none',
+        skillType: '',
+        daysValid: 30,
+      })
+      setPreview([])
+      setFiles([])
+      setSubmitted(false)
+      setSuggestedPrice(null)
+    } catch (error) {
+      addToast(error?.response?.data?.message || 'Failed to post listing', 'error')
+    } finally {
+      setPosting(false)
+    }
   }
 
   const onImageUpload = (event) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-    const imageUrl = URL.createObjectURL(file)
-    setPreview(imageUrl)
+    const selected = Array.from(event.target.files || [])
+    if (!selected.length) return
+    setFiles(selected)
+    setPreview(selected.map((file) => URL.createObjectURL(file)))
   }
 
   return (
@@ -86,15 +127,19 @@ export function AddProductPage() {
               Product Gallery
             </span>
             <div className='grid place-items-center rounded-3xl border-2 border-dashed border-slate-300 bg-linear-to-br from-slate-50/90 to-cyan-50/60 p-8 dark:border-slate-700 dark:from-slate-800/70 dark:to-slate-900/60'>
-              {preview ? (
-                <img src={preview} alt='preview' className='h-44 w-full rounded-2xl object-cover' />
+              {preview.length ? (
+                <div className='grid w-full gap-2 sm:grid-cols-3'>
+                  {preview.map((image) => (
+                    <img key={image} src={image} alt='preview' className='h-32 w-full rounded-2xl object-cover' />
+                  ))}
+                </div>
               ) : (
                 <p className='text-sm font-semibold text-slate-500 dark:text-slate-400'>
                   Drag image or click to upload
                 </p>
               )}
             </div>
-            <input type='file' className='hidden' onChange={onImageUpload} />
+            <input type='file' className='hidden' onChange={onImageUpload} multiple />
           </label>
 
           <div className='grid gap-5 md:grid-cols-2'>
@@ -136,6 +181,57 @@ export function AddProductPage() {
             error={errors.price}
           />
 
+          <div className='grid gap-4 md:grid-cols-3'>
+            <label className='block space-y-2'>
+              <span className='text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400'>
+                Listing Type
+              </span>
+              <select
+                value={form.listingKind}
+                onChange={(event) => onChange('listingKind', event.target.value)}
+                className='w-full rounded-2xl bg-white/70 px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900/70'
+              >
+                <option value='product'>Product</option>
+                <option value='notes'>Notes Marketplace</option>
+                <option value='skill'>Skill Exchange</option>
+              </select>
+            </label>
+            <label className='block space-y-2'>
+              <span className='text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400'>
+                Notes Type
+              </span>
+              <select
+                value={form.noteType}
+                onChange={(event) => onChange('noteType', event.target.value)}
+                className='w-full rounded-2xl bg-white/70 px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900/70'
+              >
+                <option value='none'>N/A</option>
+                <option value='free'>Free</option>
+                <option value='paid'>Paid</option>
+              </select>
+            </label>
+            <InputField
+              label='Expiry (days)'
+              type='number'
+              value={form.daysValid}
+              onChange={(event) => onChange('daysValid', event.target.value)}
+              placeholder='30'
+            />
+          </div>
+
+          {form.listingKind === 'skill' ? (
+            <InputField
+              label='Skill Service Type'
+              value={form.skillType}
+              onChange={(event) => onChange('skillType', event.target.value)}
+              placeholder='e.g. Tutoring, Resume Review'
+            />
+          ) : null}
+
+          <div className='rounded-2xl bg-indigo-50/80 p-3 text-sm text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-200'>
+            {suggestedPrice ? `AI suggested price: $${suggestedPrice}` : 'Click suggest to get AI average price.'}
+          </div>
+
           <label className='block space-y-2'>
             <span className='text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400'>
               Detailed Description
@@ -152,9 +248,22 @@ export function AddProductPage() {
           </label>
 
           <div className='flex flex-wrap items-center gap-3'>
-            <Button type='submit'>Post Item</Button>
+            <Button type='submit' disabled={posting}>{posting ? 'Posting...' : 'Post Item'}</Button>
             <Button type='button' variant='secondary' onClick={() => addToast('Draft saved')}>
               Save as Draft
+            </Button>
+            <Button
+              type='button'
+              variant='ghost'
+              onClick={async () => {
+                const suggestion = await suggestPrice(form.category || 'general', form.title)
+                setSuggestedPrice(suggestion)
+                if (suggestion) {
+                  addToast('Price suggestion generated')
+                }
+              }}
+            >
+              Suggest Price
             </Button>
           </div>
         </form>

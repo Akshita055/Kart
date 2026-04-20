@@ -27,8 +27,8 @@ export function WishlistPage() {
       ) : (
         <section className='grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3'>
           {wishlistItems.map((item) => (
-            <article key={item.id} className='glass-panel flex h-full flex-col rounded-3xl p-4'>
-              <img src={item.image} alt={item.title} className='aspect-[4/3] w-full rounded-2xl object-cover' />
+            <article key={item._id} className='glass-panel flex h-full flex-col rounded-3xl p-4'>
+              <img src={item.images?.[0] || item.image} alt={item.title} className='aspect-[4/3] w-full rounded-2xl object-cover' />
               <div className='mt-3 flex-1 space-y-2'>
                 <div className='flex items-start justify-between gap-2'>
                   <h3 className='line-clamp-2 text-lg font-bold text-slate-900 dark:text-slate-100'>{item.title}</h3>
@@ -47,7 +47,7 @@ export function WishlistPage() {
                 >
                   Move to Cart
                 </Button>
-                <Button variant='secondary' className='w-full' onClick={() => removeFromWishlist(item.id)}>
+                <Button variant='secondary' className='w-full' onClick={() => removeFromWishlist(item._id)}>
                   Remove
                 </Button>
               </div>

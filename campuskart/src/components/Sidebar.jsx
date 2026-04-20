@@ -5,6 +5,7 @@ const links = [
   { to: '/', label: 'Home', icon: '⌂' },
   { to: '/chat', label: 'Messages', icon: '◉' },
   { to: '/add-product', label: 'Post Item', icon: '+' },
+  { to: '/my-listings', label: 'My Listings', icon: '▦' },
   { to: '/profile', label: 'Profile', icon: '☺' },
   { to: '/settings', label: 'Settings', icon: '⚙' },
 ]

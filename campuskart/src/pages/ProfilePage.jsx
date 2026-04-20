@@ -2,10 +2,10 @@ import { motion as Motion } from 'framer-motion'
 import { ProductCard } from '../components/ProductCard'
 import { UserCard } from '../components/UserCard'
 import { useAppContext } from '../hooks/useAppContext'
-import { products, userProfile } from '../utils/data'
+import { userProfile } from '../utils/data'
 
 export function ProfilePage() {
-  const { user, isAuthenticated } = useAppContext()
+  const { user, isAuthenticated, myListings, analytics, leaderboard, loadOffers, offers, respondOffer } = useAppContext()
   const descriptor = isAuthenticated
     ? `${user?.course || 'Student'} • Year ${user?.year || '1'} • ${user?.specialization || 'General'}`
     : userProfile.college
@@ -23,7 +23,11 @@ export function ProfilePage() {
       <UserCard profile={profileData} />
 
       <section className='grid gap-4 md:grid-cols-3'>
-        {userProfile.stats.map((stat) => (
+        {[
+          { label: 'Active Listings', value: String(analytics?.listings ?? myListings.length) },
+          { label: 'Avg. Rating', value: user?.isVerified ? 'Verified Seller' : 'Building profile' },
+          { label: 'Successful Sales', value: String(analytics?.salesCount ?? 0) },
+        ].map((stat) => (
           <article
             key={stat.label}
             className='rounded-3xl border border-white/30 bg-white/75 p-5 backdrop-blur-xl dark:border-slate-700/40 dark:bg-slate-900/70'
@@ -37,8 +41,57 @@ export function ProfilePage() {
       <section className='space-y-4'>
         <h2 className='text-2xl font-black text-slate-900 dark:text-slate-100'>My Listings</h2>
         <div className='grid gap-5 sm:grid-cols-2 2xl:grid-cols-3'>
-          {products.slice(0, 3).map((item) => (
-            <ProductCard key={item.id} product={item} />
+          {myListings.map((item) => (
+            <ProductCard key={item._id} product={item} />
+          ))}
+        </div>
+      </section>
+
+      <section className='rounded-3xl border border-white/30 bg-white/75 p-6 backdrop-blur-xl dark:border-slate-700/40 dark:bg-slate-900/70'>
+        <div className='flex items-center justify-between'>
+          <h3 className='text-xl font-black text-slate-900 dark:text-slate-100'>Received Offers</h3>
+          <button
+            onClick={() => loadOffers('received')}
+            className='rounded-xl bg-indigo-600 px-3 py-2 text-xs font-semibold text-white'
+          >
+            Refresh
+          </button>
+        </div>
+        <div className='mt-4 space-y-3'>
+          {offers.length ? offers.map((offer) => (
+            <article key={offer._id} className='rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60'>
+              <p className='text-sm font-bold text-slate-900 dark:text-slate-100'>
+                {offer.buyer?.name} offered ${offer.offeredPrice} for {offer.product?.title}
+              </p>
+              <div className='mt-2 flex flex-wrap gap-2'>
+                <button
+                  onClick={() => respondOffer(offer._id, 'accepted')}
+                  className='rounded-xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white'
+                >
+                  Accept
+                </button>
+                <button
+                  onClick={() => respondOffer(offer._id, 'rejected')}
+                  className='rounded-xl bg-rose-600 px-3 py-2 text-xs font-semibold text-white'
+                >
+                  Reject
+                </button>
+              </div>
+            </article>
+          )) : (
+            <p className='text-sm text-slate-500 dark:text-slate-400'>No offers yet.</p>
+          )}
+        </div>
+      </section>
+
+      <section className='rounded-3xl border border-white/30 bg-white/75 p-6 backdrop-blur-xl dark:border-slate-700/40 dark:bg-slate-900/70'>
+        <h3 className='text-xl font-black text-slate-900 dark:text-slate-100'>Leaderboard</h3>
+        <div className='mt-4 space-y-3'>
+          {leaderboard.slice(0, 5).map((entry, index) => (
+            <article key={entry._id || entry.email} className='flex items-center justify-between rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60'>
+              <p className='text-sm font-bold text-slate-900 dark:text-slate-100'>#{index + 1} {entry.name}</p>
+              <p className='text-sm font-semibold text-indigo-600 dark:text-indigo-300'>{entry.points} pts</p>
+            </article>
           ))}
         </div>
       </section>

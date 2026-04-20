@@ -14,6 +14,7 @@ import { CartPage } from './pages/CartPage'
 import { ChatPage } from './pages/ChatPage'
 import { EditProfilePage } from './pages/EditProfilePage'
 import { HomePage } from './pages/HomePage'
+import { MyListingsPage } from './pages/MyListingsPage'
 import { ProductDetailsPage } from './pages/ProductDetailsPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { WishlistPage } from './pages/WishlistPage'
@@ -56,6 +57,7 @@ function AppShell() {
             <Route path='/wishlist' element={<WishlistPage />} />
             <Route path='/product/:id' element={<ProductDetailsPage />} />
             <Route path='/add-product' element={<AddProductPage />} />
+            <Route path='/my-listings' element={<MyListingsPage />} />
             <Route path='/chat' element={<ChatPage />} />
             <Route path='/profile' element={<ProfilePage />} />
             <Route path='/profile/edit' element={<EditProfilePage />} />

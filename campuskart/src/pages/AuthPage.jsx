@@ -33,6 +33,7 @@ export function AuthPage() {
     year: '',
     universityRollNo: '',
     email: '',
+    password: '',
   })
 
   const specializationOptions = useMemo(
@@ -49,44 +50,58 @@ export function AuthPage() {
       year: signUpForm.year ? '' : 'Year is required',
       universityRollNo: signUpForm.universityRollNo ? '' : 'University roll no is required',
       email: signUpForm.email ? '' : 'Mail ID is required',
+      password: signUpForm.password ? '' : 'Password is required',
     }
   }, [mode, signUpForm])
 
   const hasSignUpError = Object.values(signUpErrors).some(Boolean)
 
-  const handleSignIn = (event) => {
+  const handleSignIn = async (event) => {
     event.preventDefault()
     if (!signInForm.email || !signInForm.password) {
       addToast('Enter email and password', 'error')
       return
     }
-    signIn(signInForm)
-    addToast('Welcome back!')
-    navigate('/')
+    try {
+      await signIn(signInForm)
+      addToast('Welcome back!')
+      navigate('/')
+    } catch (error) {
+      addToast(error?.response?.data?.msg || 'Login failed', 'error')
+    }
   }
 
-  const handleSignUp = (event) => {
+  const handleSignUp = async (event) => {
     event.preventDefault()
     if (hasSignUpError) {
       addToast('Please fill all signup fields', 'error')
       return
     }
-    signUp(signUpForm)
-    addToast('Account created successfully')
-    navigate('/')
+    try {
+      await signUp(signUpForm)
+      addToast('Account created successfully')
+      navigate('/')
+    } catch (error) {
+      addToast(error?.response?.data?.msg || 'Signup failed', 'error')
+    }
   }
 
-  const handleGoogleSignUp = () => {
-    signUp({
+  const handleGoogleSignUp = async () => {
+    try {
+      await signUp({
       name: 'Google Student',
       course: 'B.Tech',
       specialization: 'Computer Science',
       year: '3',
       universityRollNo: 'GK2026-001',
       email: 'google.student@campus.edu',
-    })
-    addToast('Signed up with Google')
-    navigate('/')
+      password: 'google-auth',
+      })
+      addToast('Signed up with Google')
+      navigate('/')
+    } catch {
+      addToast('Google signup simulation failed', 'error')
+    }
   }
 
   return (
@@ -246,6 +261,14 @@ export function AuthPage() {
               onChange={(event) => setSignUpForm((prev) => ({ ...prev, email: event.target.value }))}
               error={signUpErrors.email}
               placeholder='you@college.edu'
+            />
+            <InputField
+              label='Password'
+              type='password'
+              value={signUpForm.password}
+              onChange={(event) => setSignUpForm((prev) => ({ ...prev, password: event.target.value }))}
+              error={signUpErrors.password}
+              placeholder='Create a secure password'
             />
 
             <Button className='w-full' type='submit'>

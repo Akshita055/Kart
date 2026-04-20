@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { motion as Motion } from 'framer-motion'
-import { categories, products } from '../utils/data'
+import { categories } from '../utils/data'
 import { CategoryCard } from '../components/CategoryCard'
 import { FilterSidebar } from '../components/FilterSidebar'
 import { ProductCard } from '../components/ProductCard'
@@ -8,19 +8,22 @@ import { SkeletonCard } from '../components/SkeletonCard'
 import { useAppContext } from '../hooks/useAppContext'
 
 export function HomePage() {
-  const { searchQuery } = useAppContext()
-  const [selectedCategory, setSelectedCategory] = useState('all')
-  const [maxPrice, setMaxPrice] = useState(700)
-  const [loading] = useState(false)
+  const {
+    searchQuery,
+    products,
+    homeFilters,
+    setHomeFilters,
+    fetchProducts,
+    homeLoading,
+  } = useAppContext()
+
+  useEffect(() => {
+    fetchProducts()
+  }, [fetchProducts, homeFilters, searchQuery])
 
   const filteredProducts = useMemo(() => {
-    return products.filter((item) => {
-      const categoryMatch = selectedCategory === 'all' || item.category === selectedCategory
-      const priceMatch = item.price <= maxPrice
-      const searchMatch = item.title.toLowerCase().includes(searchQuery.toLowerCase())
-      return categoryMatch && priceMatch && searchMatch
-    })
-  }, [maxPrice, searchQuery, selectedCategory])
+    return products
+  }, [products])
 
   return (
     <Motion.main
@@ -91,10 +94,10 @@ export function HomePage() {
 
       <section className='grid gap-6 lg:grid-cols-[250px_1fr]'>
         <FilterSidebar
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
-          maxPrice={maxPrice}
-          setMaxPrice={setMaxPrice}
+          selectedCategory={homeFilters.category}
+          setSelectedCategory={(value) => setHomeFilters((prev) => ({ ...prev, category: value }))}
+          maxPrice={homeFilters.maxPrice}
+          setMaxPrice={(value) => setHomeFilters((prev) => ({ ...prev, maxPrice: value }))}
         />
 
         <div className='space-y-6'>
@@ -108,7 +111,7 @@ export function HomePage() {
             </span>
           </div>
 
-          {loading ? (
+          {homeLoading ? (
             <div className='grid grid-cols-1 gap-5 sm:grid-cols-2 2xl:grid-cols-3'>
               {Array.from({ length: 3 }).map((_, i) => (
                 <SkeletonCard key={i} />
